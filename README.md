@@ -1,5 +1,7 @@
 # Sorted Pawn Reloaded
 
+[![CurseForge Downloads](https://img.shields.io/curseforge/dt/1477682?logo=curseforge&color=orange)](https://www.curseforge.com/wow/addons/sorted-pawn-reloaded)
+
 A plugin for the **Sorted** inventory addon that adds a **Pawn upgrade
 column**.
 

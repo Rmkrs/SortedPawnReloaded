@@ -5,5 +5,6 @@
 ## Version: 2.0.0
 ## Dependencies: Pawn, Sorted
 ## DefaultState: enabled
+## X-Curse-Project-ID: 1477682
 
 SortedPawnReloaded.lua
