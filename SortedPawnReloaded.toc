@@ -1,0 +1,9 @@
+## Interface: 120000
+## Title: |TInterface\Addons\Sorted\Textures\Addon-Text_:0:0|t • Pawn
+## Notes: Pawn plugin for Sorted.
+## Author: Hurons
+## Version: 2.0.0
+## Dependencies: Pawn, Sorted
+## DefaultState: enabled
+
+SortedPawnReloaded.lua
