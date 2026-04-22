@@ -1,4 +1,4 @@
-## Interface: 120000
+## Interface: 120005
 ## Title: |TInterface\Addons\Sorted\Textures\Addon-Text_:0:0|t • Pawn
 ## Notes: Pawn plugin for Sorted.
 ## Author: Hurons
