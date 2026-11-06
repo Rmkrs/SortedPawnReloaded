@@ -97,8 +97,10 @@ end
 -- Localize globals (Lua perf)
 --------------------------------------------------
 
-local GetItemInfoInstant = GetItemInfoInstant
-local IsEquippableItem = IsEquippableItem
+-- Prefer the C_Item namespace: the bare globals are deprecated aliases that
+-- Forever (and future retail builds) may not ship. Fall back for older clients.
+local GetItemInfoInstant = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+local IsEquippableItem = (C_Item and C_Item.IsEquippableItem) or IsEquippableItem
 local GetContainerItemLink = C_Container.GetContainerItemLink
 local GetContainerNumSlots = C_Container.GetContainerNumSlots
 
@@ -164,16 +166,23 @@ local function SafeCall(fn, ...)
     return result
 end
 
+-- Pawn's PercentUpgrade is always a fraction (0.69 = 69%, 8.33 = 833%).
+-- Values >= PawnBigUpgradeThreshold (100) are a sentinel Pawn uses for
+-- "empty slot / no comparison possible"; its tooltip then shows just "upgrade".
+-- We map that to math.huge: shown as a bare arrow, sorted above everything.
+local BIG_UPGRADE = math.huge
+
 local function NormalizePawnPercent(p)
     if type(p) ~= "number" then
         return nil
     end
 
-    if math.abs(p) <= 1.5 then
-        return p * 100
+    local threshold = _G.PawnBigUpgradeThreshold or 100
+    if p >= threshold then
+        return BIG_UPGRADE
     end
 
-    return p
+    return p * 100
 end
 
 local function GetPawnUpgradePercent(itemLink)
@@ -220,6 +229,23 @@ local function GetPawnUpgradePercent(itemLink)
 end
 
 --------------------------------------------------
+-- Sorted repaint
+--------------------------------------------------
+
+local COLUMN_KEY = "PAWN"
+
+-- LibStub("Sorted.") is Sorted's public API object; it exposes UpdateColumn
+-- to refresh one column's data and redraw it in every open item list.
+local function RefreshSorted()
+    if not SortedPawnReloaded_ColumnRegistered then return end
+    local Sorted = LibStub("Sorted.", true)
+    if Sorted and type(Sorted.UpdateColumn) == "function" then
+        local ok, err = pcall(Sorted.UpdateColumn, COLUMN_KEY)
+        if not ok then D("Sorted.UpdateColumn failed:", err) end
+    end
+end
+
+--------------------------------------------------
 -- Bag scanning
 --------------------------------------------------
 
@@ -229,7 +255,7 @@ local function ScanBags(reason)
     wipe(EquippableItems)
     wipe(PawnCache)
 
-    for bag = 0, NUM_BAG_SLOTS do
+    for bag = 0, (NUM_BAG_SLOTS or 4) do
         local numSlots = GetContainerNumSlots(bag)
 
         for slot = 1, numSlots do
@@ -244,14 +270,7 @@ local function ScanBags(reason)
         end
     end
 
-    local Sorted = LibStub("Sorted.", true)
-    if Sorted then
-        if Sorted.itemLists and Sorted.itemLists.primary then
-            Sorted.itemLists.primary:Update()
-        elseif Sorted.currentItemList then
-            Sorted.currentItemList:Update()
-        end
-    end
+    RefreshSorted()
 end
 
 --------------------------------------------------
@@ -297,8 +316,6 @@ local function TryRegisterSortedColumn()
     end
     SortedPawnReloaded_ColumnRegistered = true
 
-    local COLUMN_KEY = "PAWN"
-
     local function CreateElement(cell)
         cell.text = cell:CreateFontString(nil, "OVERLAY", "SortedFont")
         cell.text:SetAllPoints()
@@ -316,7 +333,9 @@ local function TryRegisterSortedColumn()
         end
 
         local percent = GetPawnUpgradePercent(link)
-        if percent then
+        if percent == BIG_UPGRADE then
+            cell.text:SetText("|TInterface\\Addons\\Pawn\\Textures\\UpgradeArrow:12|t")
+        elseif percent then
             cell.text:SetText(string.format("|TInterface\\Addons\\Pawn\\Textures\\UpgradeArrow:12|t %.0f%%", percent))
         end
     end
@@ -388,12 +407,7 @@ frame:SetScript("OnEvent", function(_, event, arg1)
         elseif arg1 == "Pawn" then
             -- Pawn may have loaded after us; refresh caches and repaint.
             wipe(PawnCache)
-            if LibStub("Sorted.", true) then
-                local Sorted = LibStub("Sorted.", true)
-                if Sorted and Sorted.currentItemList then
-                    Sorted.currentItemList:Update()
-                end
-            end
+            RefreshSorted()
         end
     end
 end)

@@ -9,6 +9,8 @@ This addon restores compatibility with modern World of Warcraft versions
 and integrates Pawn upgrade information directly into the Sorted
 inventory UI.
 
+Supports both **Retail** and **WoW Forever** from a single download.
+
 ------------------------------------------------------------------------
 
 ## Features

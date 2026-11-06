@@ -1,8 +1,8 @@
-## Interface: 120100
+## Interface: 120100, 120105, 120107, 16001
 ## Title: |TInterface\Addons\Sorted\Textures\Addon-Text_:0:0|t • Pawn
 ## Notes: Pawn plugin for Sorted.
 ## Author: Hurons
-## Version: 2.0.0
+## Version: 2.1.0
 ## Dependencies: Pawn, Sorted
 ## DefaultState: enabled
 ## X-Curse-Project-ID: 1477682
